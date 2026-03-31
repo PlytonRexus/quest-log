@@ -19,7 +19,7 @@ export async function getDb(): Promise<Database> {
     const SQL = await initSqlJs(
       isNode
         ? undefined
-        : { locateFile: (file: string) => `/${file}` },
+        : { locateFile: (file: string) => `${import.meta.env.BASE_URL}${file}` },
     )
     dbInstance = new SQL.Database()
     dbInstance.run('PRAGMA foreign_keys = ON')

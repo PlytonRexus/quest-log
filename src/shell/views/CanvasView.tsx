@@ -234,6 +234,25 @@ function CanvasView() {
     [tropes],
   )
 
+  const [loaded, setLoaded] = useState(false)
+
+  // Mark initial load complete
+  useEffect(() => {
+    if (!loaded && elements.length === 0) {
+      // Wait for first load to finish before showing empty state
+      getCanvasElements().then((els) => {
+        if (els.length === 0) setLoaded(true)
+      })
+    }
+  }, [loaded, elements.length])
+
+  // Dismiss empty state when elements appear
+  useEffect(() => {
+    if (elements.length > 0) setLoaded(false)
+  }, [elements.length])
+
+  const showEmptyHint = loaded && elements.length === 0
+
   return (
     <div className="h-full relative" data-testid="canvas-view">
       <CanvasToolbar
@@ -247,6 +266,23 @@ function CanvasView() {
       <div aria-live="polite" className="sr-only" data-testid="canvas-sr-announce">
         {focusedLabel}
       </div>
+      {showEmptyHint && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+          <div
+            className="text-center max-w-sm px-6 py-8 rounded-xl"
+            style={{
+              backdropFilter: 'blur(12px)',
+              background: 'rgba(0,0,0,0.6)',
+            }}
+          >
+            <h3 className="text-lg font-semibold text-star mb-2">Canvas is empty</h3>
+            <p className="text-star/60 text-sm">
+              Use the toolbar above to place sticky notes, trope cards, or work cards.
+              Connect elements to map out narrative patterns, or let the AI analyze your board.
+            </p>
+          </div>
+        </div>
+      )}
       <InfiniteCanvas viewport={viewport} onViewportChange={setViewport}>
         {(vp) => (
           <div

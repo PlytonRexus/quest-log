@@ -13,48 +13,42 @@ vi.mock('../../db/dal', () => ({
   getOverallStats: vi.fn().mockResolvedValue({ totalWorks: 0, totalTropes: 0, avgScore: 0 }),
 }))
 
-function renderHud(props?: Partial<React.ComponentProps<typeof HudOverlay>>) {
-  const defaultProps = {
-    activeView: 'galaxy' as const,
-    onViewChange: vi.fn(),
-    ...props,
-  }
+function renderHud() {
   return render(
     <FocusProvider>
-      <HudOverlay {...defaultProps} />
+      <HudOverlay />
     </FocusProvider>,
   )
 }
 
 describe('HudOverlay', () => {
-  it('renders left panel, right panel', () => {
+  it('renders right panel', () => {
     renderHud()
-    expect(screen.getByTestId('hud-left-panel')).toBeInTheDocument()
     expect(screen.getByTestId('hud-right-panel')).toBeInTheDocument()
   })
 
-  it('panels have backdrop-filter blur style applied', () => {
+  it('right panel has backdrop-filter blur style applied', () => {
     renderHud()
-    const leftPanel = screen.getByTestId('hud-left-panel')
-    expect(leftPanel.style.backdropFilter).toBe('blur(12px)')
+    const rightPanel = screen.getByTestId('hud-right-panel')
+    expect(rightPanel.style.backdropFilter).toBe('blur(12px)')
   })
 
-  it('toggle button hides and shows panels', () => {
+  it('toggle button hides and shows panel', () => {
     renderHud()
     expect(screen.getByTestId('hud-overlay')).toBeInTheDocument()
 
     // Click hide
-    const hideBtn = screen.getByLabelText('Hide HUD panels')
+    const hideBtn = screen.getByLabelText('Hide context panel')
     fireEvent.click(hideBtn)
     expect(screen.queryByTestId('hud-overlay')).not.toBeInTheDocument()
 
     // Click show
-    const showBtn = screen.getByLabelText('Show HUD panels')
+    const showBtn = screen.getByLabelText('Show context panel')
     fireEvent.click(showBtn)
     expect(screen.getByTestId('hud-overlay')).toBeInTheDocument()
   })
 
-  it('keyboard shortcut H toggles panels', () => {
+  it('keyboard shortcut H toggles panel', () => {
     renderHud()
     expect(screen.getByTestId('hud-overlay')).toBeInTheDocument()
 

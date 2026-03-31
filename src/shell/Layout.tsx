@@ -22,7 +22,7 @@ export function Layout() {
           </header>
           <main className="flex-1 min-h-0 flex flex-col relative" role="main">
             <ViewRouter activeView={activeView} onViewChange={setActiveView} />
-            <HudOverlay activeView={activeView} onViewChange={setActiveView} />
+            <HudOverlay />
           </main>
           <StatsBar />
         </div>

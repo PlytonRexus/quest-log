@@ -20,7 +20,7 @@ interface Props {
 }
 
 export function ChatPanel({ className }: Props) {
-  const { isReady, isGenerating, abort } = useLlm()
+  const { isReady, isGenerating, abort, generate } = useLlm()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [streamingContent, setStreamingContent] = useState('')
@@ -40,7 +40,7 @@ export function ChatPanel({ className }: Props) {
     setStreamingContent('')
 
     try {
-      const { context, response } = await queryWithContext(query, {
+      const { context, response } = await queryWithContext(query, generate, {
         onToken: (token) => {
           setStreamingContent((prev) => prev + token)
         },
@@ -68,7 +68,7 @@ export function ChatPanel({ className }: Props) {
   if (!isReady) {
     return (
       <div className={`p-4 bg-surface rounded-lg border border-border ${className ?? ''}`}>
-        <p className="text-star/50 text-sm">Load a local LLM model above to enable chat.</p>
+        <p className="text-star/50 text-sm">Set up a Gemini API key or load a local LLM model to enable chat.</p>
       </div>
     )
   }

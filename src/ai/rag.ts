@@ -1,8 +1,12 @@
 // Retrieval-Augmented Generation: builds context for LLM queries
 
 import { aiManager } from './manager'
-import { llmManager } from './llmManager'
 import { findSimilarWorks } from './similarity'
+
+type GenerateFn = (
+  messages: { role: string; content: string }[],
+  options?: { maxTokens?: number; onToken?: (token: string, done: boolean) => void },
+) => Promise<string>
 import { getWorks, getWorkById, getWorkWithFullProfile, getReviewsForWork, getDimensions } from '../db/dal'
 import type { Work, WorkProfile, Review, Dimension } from '../types'
 
@@ -134,6 +138,7 @@ export async function buildContext(
 
 export async function queryWithContext(
   userQuery: string,
+  generateFn: GenerateFn,
   options?: { maxTokens?: number; onToken?: (token: string, done: boolean) => void },
 ): Promise<{ context: RagContext; response: string }> {
   const context = await buildContext(userQuery)
@@ -142,7 +147,7 @@ export async function queryWithContext(
     { role: 'user', content: userQuery },
   ]
 
-  const response = await llmManager.generateFull(messages, {
+  const response = await generateFn(messages, {
     maxTokens: options?.maxTokens,
     onToken: options?.onToken,
   })

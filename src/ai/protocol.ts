@@ -2,6 +2,7 @@
 // Uses discriminated unions on 'type' field for exhaustive type checking
 
 export type ModelStatus = 'idle' | 'loading' | 'ready' | 'error'
+export type LlmProvider = 'local' | 'gemini'
 
 let requestCounter = 0
 

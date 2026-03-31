@@ -34,7 +34,7 @@ describe('ChatPanel', () => {
 
   it('shows disabled state when LLM not loaded', () => {
     render(<ChatPanel />)
-    expect(screen.getByText(/Load a local LLM model/)).toBeInTheDocument()
+    expect(screen.getByText(/Set up a Gemini API key or load a local LLM/)).toBeInTheDocument()
   })
 
   it('shows example prompts when LLM is ready and no messages', () => {

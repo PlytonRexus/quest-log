@@ -10,6 +10,8 @@ vi.mock('../../hooks/useLlm', () => ({
 
 describe('ModelSelector', () => {
   const defaultState = {
+    provider: 'gemini' as const,
+    setProvider: vi.fn(),
     status: 'idle' as const,
     progress: 0,
     message: null,
@@ -21,41 +23,71 @@ describe('ModelSelector', () => {
     initLlm: vi.fn(),
     generate: vi.fn(),
     abort: vi.fn(),
+    apiKey: null as string | null,
+    setApiKey: vi.fn(),
   }
 
   beforeEach(() => {
     mockUseLlm.mockReturnValue(defaultState)
   })
 
-  it('shows WebGPU unavailable message when not supported', () => {
-    mockUseLlm.mockReturnValue({ ...defaultState, isWebGpuAvailable: false })
+  it('renders provider tabs', () => {
     render(<ModelSelector />)
-    expect(screen.getByText(/WebGPU is not available/)).toBeInTheDocument()
+    expect(screen.getByText('Gemini Flash')).toBeInTheDocument()
+    expect(screen.getByText('Local LLM')).toBeInTheDocument()
   })
 
-  it('renders model size options in idle state', () => {
+  it('shows Gemini tab by default with API key input', () => {
+    render(<ModelSelector />)
+    expect(screen.getByPlaceholderText('Paste API key')).toBeInTheDocument()
+    expect(screen.getByText('Save')).toBeInTheDocument()
+  })
+
+  it('shows Gemini ready when API key is set and ready', () => {
+    mockUseLlm.mockReturnValue({
+      ...defaultState,
+      isReady: true,
+      apiKey: 'test-key',
+    })
+    render(<ModelSelector />)
+    expect(screen.getByText('Gemini Flash ready')).toBeInTheDocument()
+  })
+
+  it('calls setApiKey when Save is clicked', () => {
+    const setApiKey = vi.fn()
+    mockUseLlm.mockReturnValue({ ...defaultState, setApiKey })
+
+    render(<ModelSelector />)
+    const input = screen.getByPlaceholderText('Paste API key')
+    fireEvent.change(input, { target: { value: 'my-key' } })
+    fireEvent.click(screen.getByText('Save'))
+
+    expect(setApiKey).toHaveBeenCalledWith('my-key')
+  })
+
+  it('switches to Local LLM tab and shows model options', () => {
+    const setProvider = vi.fn()
+    mockUseLlm.mockReturnValue({ ...defaultState, provider: 'local', setProvider })
+
     render(<ModelSelector />)
     expect(screen.getByText('1B (fast, ~700MB)')).toBeInTheDocument()
-    expect(screen.getByText('3B (balanced, ~1.8GB)')).toBeInTheDocument()
     expect(screen.getByText('Load Model')).toBeInTheDocument()
   })
 
-  it('calls initLlm with selected size when Load Model is clicked', () => {
-    const initLlm = vi.fn()
-    mockUseLlm.mockReturnValue({ ...defaultState, initLlm })
-
-    render(<ModelSelector />)
-
-    // Select medium model
-    fireEvent.click(screen.getByText('3B (balanced, ~1.8GB)'))
-    fireEvent.click(screen.getByText('Load Model'))
-
-    expect(initLlm).toHaveBeenCalledWith('medium')
-  })
-
-  it('shows progress bar during loading', () => {
+  it('shows WebGPU unavailable message on local tab', () => {
     mockUseLlm.mockReturnValue({
       ...defaultState,
+      provider: 'local',
+      isWebGpuAvailable: false,
+    })
+    render(<ModelSelector />)
+    expect(screen.getByText(/WebGPU not available/)).toBeInTheDocument()
+  })
+
+  it('shows progress bar during local model loading', () => {
+    mockUseLlm.mockReturnValue({
+      ...defaultState,
+      provider: 'local',
       status: 'loading',
       isLoading: true,
       progress: 45,
@@ -67,27 +99,15 @@ describe('ModelSelector', () => {
     expect(screen.getByText('Downloading model...')).toBeInTheDocument()
   })
 
-  it('shows ready indicator when loaded', () => {
+  it('shows local LLM ready indicator', () => {
     mockUseLlm.mockReturnValue({
       ...defaultState,
+      provider: 'local',
       status: 'ready',
       isReady: true,
     })
 
     render(<ModelSelector />)
-    expect(screen.getByText('LLM Ready')).toBeInTheDocument()
-  })
-
-  it('shows error state with retry button', () => {
-    mockUseLlm.mockReturnValue({
-      ...defaultState,
-      status: 'error',
-      isError: true,
-      message: 'WebGPU init failed',
-    })
-
-    render(<ModelSelector />)
-    expect(screen.getByText('WebGPU init failed')).toBeInTheDocument()
-    expect(screen.getByText('Retry')).toBeInTheDocument()
+    expect(screen.getByText('Local LLM ready')).toBeInTheDocument()
   })
 })

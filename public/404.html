@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>quest-log</title>
+    <script>
+      // GitHub Pages SPA redirect: preserve the path in sessionStorage
+      // so index.html can restore it via history.replaceState
+      sessionStorage.redirect = location.href;
+      location.replace(location.pathname.split('/').slice(0, 2).join('/') + '/');
+    </script>
+  </head>
+  <body></body>
+</html>
